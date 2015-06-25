@@ -7,32 +7,26 @@
 
 //prototype declaration
 void pin_initialization();
-void motor1_ctrl( int );
-void motor2_ctrl( int );
+void motor_ctrl( char );
 
 //LED番号とwiringPiのピンを変換する配列
 int MOTOR1_PIN[] = { 1, 4 };
 int MOTOR2_PIN[] = { 5, 6 };
 
 int main( int argc, char *argv[] ) {
-	if( argc < 3 ) {
-		printf("Usage: %s MOTOR_IN1 MOTOR_IN2\n", argv[0] );
+	if( argc < 2 ) {
+		printf("Usage: %s MOTOR_CMD\n", argv[0] );
 		return EXIT_FAILURE;
 	}
 
 	//convert to int type
-	int MOTOR1_MOVE = atoi( argv[1] );
-	int MOTOR2_MOVE = atoi( argv[2] );	
+	char MOTOR_CMD = *argv[1];
 
-	if( !( MOTOR1_MOVE >= 0 && MOTOR1_MOVE < 4 ) ) {
-		printf("Error: MOTOR_IN1 must be specified to 0 or 1.\n");
+	if( !( MOTOR_CMD == 'f' || MOTOR_CMD == 'b' || MOTOR_CMD == 'r' || MOTOR_CMD == 'l' || MOTOR_CMD == 's'  ) ) {
+		printf("Error: Please read readme.md \n");
 		return EXIT_FAILURE;
 	}
-
-	if( !( MOTOR2_MOVE >= 0 && MOTOR2_MOVE < 4 ) ) {
-		printf("Error: MOTOR_IN2 must be specified to 0 or 1.\n");
-		return EXIT_FAILURE;
-	}
+	
 
 	//wiringPi初期化
 	if( wiringPiSetup() == -1 ) {
@@ -42,10 +36,8 @@ int main( int argc, char *argv[] ) {
 
 
 	pin_initialization();	
-
-	motor1_ctrl( MOTOR1_MOVE );
 	
-	motor2_ctrl( MOTOR2_MOVE );		
+	motor_ctrl( MOTOR_CMD );       
 	
 	
 	return 0;
@@ -61,43 +53,36 @@ void pin_initialization() {
 }
 
 
-void motor1_ctrl( int motor1 ) {
-	//motor1 control
-	if( motor1 == 0 ) {
-		digitalWrite( MOTOR1_PIN[ 0 ], 0 );
-		digitalWrite( MOTOR1_PIN[ 1 ], 0 );
-	}
-	else if( motor1 == 1 ) {
+void motor_ctrl( char motor_cmd ) {
+	//motor control
+	if( motor_cmd == 'f' ) {
 		digitalWrite( MOTOR1_PIN[ 0 ], 1 );
 		digitalWrite( MOTOR1_PIN[ 1 ], 0 );
-	}
-	else if( motor1 == 2 ) {
-		digitalWrite( MOTOR1_PIN[ 0 ], 0 );
-		digitalWrite( MOTOR1_PIN[ 1 ], 1 );
-	}
-	else if( motor1 == 3 ) {
-		digitalWrite( MOTOR1_PIN[ 0 ], 1 );
-		digitalWrite( MOTOR1_PIN[ 1 ], 1 );
-	}
-}
-
-
-void motor2_ctrl( int motor2 ) {
-	//motor2 control
-	if( motor2 == 0 ) {
-		digitalWrite( MOTOR2_PIN[ 0 ], 0 );
-		digitalWrite( MOTOR2_PIN[ 1 ], 0 );
-	}
-	else if( motor2 == 1 ) {
 		digitalWrite( MOTOR2_PIN[ 0 ], 1 );
 		digitalWrite( MOTOR2_PIN[ 1 ], 0 );
 	}
-	else if( motor2 == 2 ) {
+	else if( motor_cmd == 'b' ) {
+		digitalWrite( MOTOR1_PIN[ 0 ], 0 );
+		digitalWrite( MOTOR1_PIN[ 1 ], 1 );
 		digitalWrite( MOTOR2_PIN[ 0 ], 0 );
 		digitalWrite( MOTOR2_PIN[ 1 ], 1 );
 	}
-	else if( motor2 == 3 ) {
+	else if( motor_cmd == 'r' ) {
+		digitalWrite( MOTOR1_PIN[ 0 ], 0 );
+		digitalWrite( MOTOR1_PIN[ 1 ], 1 );
 		digitalWrite( MOTOR2_PIN[ 0 ], 1 );
+		digitalWrite( MOTOR2_PIN[ 1 ], 0 );
+	}
+	else if( motor_cmd == 'l' ) {
+		digitalWrite( MOTOR1_PIN[ 0 ], 1 );
+		digitalWrite( MOTOR1_PIN[ 1 ], 0 );
+		digitalWrite( MOTOR2_PIN[ 0 ], 0 );
 		digitalWrite( MOTOR2_PIN[ 1 ], 1 );
+	}
+	else if( motor_cmd == 's' ) {
+		digitalWrite( MOTOR1_PIN[ 0 ], 0 );
+		digitalWrite( MOTOR1_PIN[ 1 ], 0 );
+		digitalWrite( MOTOR2_PIN[ 0 ], 0 );
+		digitalWrite( MOTOR2_PIN[ 1 ], 0 );
 	}
 }

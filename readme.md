@@ -2,16 +2,17 @@
 モーターを動かすためのプロトコル
 ```
 
-MOTOR1, MOTOR2:
+MOTOR_CMD
 
-0: ストップ
+f: 前進
 
-1: CW
+b: 後退
 
-2: CCW
+r: 右回転
 
-3: ブレーキ
+l: 左回転
 
+s: ストップ
 
-例： http://192.168.11.38/~pi/kadai_motordrive.php?MOTOR1=1&MOTOR2=1 でCW
+例： http://192.168.11.38/~pi/kadai_motordrive.php?MOTOR_CMD=f で前進
 
