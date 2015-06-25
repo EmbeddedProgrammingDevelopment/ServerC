@@ -20,13 +20,14 @@ int main( int argc, char *argv[] ) {
 		return EXIT_FAILURE;
 	}
 	*/
-	//convert to int type
-	char MOTOR_CMD;
-	FILE* input=NULL;
+	//convert to int type	
+	FILE* input = NULL;
 	
 	input = fopen("/dev/ttyAMA0","r");
-    if(input==NULL)
-        printf("Input Stream is not correct.\n");
+	if( input == NULL ) {
+		printf("Input Stream is not correct.\n");
+		return EXIT_FAILURE;
+	}
 	
 	//wiringPi初期化
 	if( wiringPiSetup() == -1 ) {
@@ -36,9 +37,11 @@ int main( int argc, char *argv[] ) {
 
 	pin_initialization();	     
 	
-    while(1){
-		MOTOR_CMD = fgetc(fp);
-		if(MOTOR_CMD!='q')
+	while( 1 ){
+		char MOTOR_CMD = fgetc( input );
+		putchar( MOTOR_CMD );
+		
+		if( MOTOR_CMD != 'q' )
 		{
 			motor_ctrl( MOTOR_CMD );	
 		}
@@ -46,8 +49,8 @@ int main( int argc, char *argv[] ) {
 		{
 			break;
 		}
-    }
-    fclose(fp);
+	}
+	fclose( input );
 	
 	return 0;
 }
@@ -64,7 +67,7 @@ void pin_initialization() {
 
 void motor_ctrl( char motor_cmd ) {
 	
-	if( !( MOTOR_CMD == 'f' || MOTOR_CMD == 'b' || MOTOR_CMD == 'r' || MOTOR_CMD == 'l' || MOTOR_CMD == 's'  ) ) {
+	if( !( motor_cmd == 'f' || motor_cmd == 'b' || motor_cmd == 'r' || motor_cmd == 'l' || motor_cmd == 's'  ) ) {
 		printf("Error: Please read readme.md \n");
 		return;
 	}
