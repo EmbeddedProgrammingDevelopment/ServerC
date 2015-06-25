@@ -4,15 +4,20 @@
 #include <wiringPi.h>
 
 #define EXIT_FAILURE -1
+#define MAX_TIME 85
 
 //prototype declaration
 void pin_initialization();
 void motor_ctrl( char );
 void send_properties(FILE*);
 
-//LED番号とwiringPiのピンを変換する配列
+//wiringPiのピンを変換する配列
 int MOTOR1_PIN[] = { 1, 4 };
 int MOTOR2_PIN[] = { 5, 6 };
+int DHT11_PIN = 3;
+
+//DHT11関係
+int dht11_val[5] = { 0, 0, 0, 0, 0 };
 
 int main( int argc, char *argv[] ) {
 	/*
@@ -38,20 +43,17 @@ int main( int argc, char *argv[] ) {
 
 	pin_initialization();	     
 	
-	while( 1 ){
+	while( 1 ) {
 		char MOTOR_CMD = fgetc( input );
 		putchar( MOTOR_CMD );
-		
-		if( MOTOR_CMD != 'q' )
-		{
-			motor_ctrl( MOTOR_CMD );	
-		}
-		else if(MOTOR_CMD == 'g')
-		{
+
+		if( MOTOR_CMD == 'g' ) {
 			send_properties(input);
 		}
-		else
-		{
+		else if( MOTOR_CMD != 'q' ) {
+			motor_ctrl( MOTOR_CMD );	
+		}		
+		else {
 			break;
 		}
 	}
@@ -60,18 +62,58 @@ int main( int argc, char *argv[] ) {
 	return 0;
 }
 
-void send_properties(FILE* fp)
-{
-	//気温, 湿度の順で書き込むこと
-	fprintf(fp,"%f,%f",1000.0,1000.0);
-	fflush(fp);
+
+void send_properties( FILE* fp ) {
+	uint8_t lststate = HIGH;
+	uint8_t counter = 0;
+	uint8_t i, j = 0;
+
+	for( i = 0; i < 5; i++ )
+		dht11_val[i] = 0;
+
+	pinMode( DHT11_PIN, OUTPUT );
+	digitalWrite( DHT11_PIN, LOW );
+	delay( 18 );
+	digitalWrite( DHT11_PIN, HIGH );
+	delayMicroseconds( 40 );
+	pinMode( DHT11PIN, INPUT );
+	
+	for( i = 0; i < MAX_TIME; i++ )
+	{
+		counter = 0;
+		while( digitalRead( DHT11_PIN ) == lststate ) {
+			counter++;
+			delayMicroseconds( 1 );
+			if( counter == 255 )
+				break;
+		}
+		lststate = digitalRead( DHT11_PIN );
+		if( counter == 255 )
+			break;
+		// top 3 transistions are ignored
+		if( ( i >= 4 ) && ( i % 2 == 0 ) ) {
+			dht11_val[ j / 8 ] <<= 1;
+			if( counter > 16 )
+				dht11_val[ j / 8 ] |= 1;
+			j++;
+		}
+	}
+	// verify cheksum and print the verified data
+	if( ( j >= 40 ) && ( dht11_val[4] == ( ( dht11_val[0] + dht11_val[1] + dht11_val[2] + dht11_val[3] ) & 0xFF ) ) ) {
+		float temperature = float( dht11_val[0] ) + float( dht11_val[1] ) * 0.01;
+		float humidity = float( dht11_val[2] ) + float( dht11_val[3] ) * 0.01;
+		fprintf( fp, "%f, %f", temperature, humidity ); //気温, 湿度の順で書き込むこと
+	}
+  	
+	fflush( fp );
 }
+
 
 void pin_initialization() {	
 	pinMode( MOTOR1_PIN[ 0 ], OUTPUT );
 	pinMode( MOTOR1_PIN[ 1 ], OUTPUT );
 	pinMode( MOTOR2_PIN[ 0 ], OUTPUT );
-	pinMode( MOTOR2_PIN[ 1 ], OUTPUT );
+	pinMode( MOTOR2_PIN[ 1 ], OUTPUT );	
 }
 
 
