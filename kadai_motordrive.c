@@ -8,6 +8,7 @@
 //prototype declaration
 void pin_initialization();
 void motor_ctrl( char );
+void send_properties(FILE*);
 
 //LED番号とwiringPiのピンを変換する配列
 int MOTOR1_PIN[] = { 1, 4 };
@@ -23,7 +24,7 @@ int main( int argc, char *argv[] ) {
 	//convert to int type	
 	FILE* input = NULL;
 	
-	input = fopen("/dev/ttyAMA0","r");
+	input = fopen("/dev/ttyAMA0","r+");
 	if( input == NULL ) {
 		printf("Input Stream is not correct.\n");
 		return EXIT_FAILURE;
@@ -45,6 +46,10 @@ int main( int argc, char *argv[] ) {
 		{
 			motor_ctrl( MOTOR_CMD );	
 		}
+		else if(MOTOR_CMD == 'g')
+		{
+			send_properties(input);
+		}
 		else
 		{
 			break;
@@ -55,7 +60,12 @@ int main( int argc, char *argv[] ) {
 	return 0;
 }
 
-
+void send_properties(FILE* fp)
+{
+	//気温, 湿度の順で書き込むこと
+	fprintf(fp,"%f,%f",1000.0,1000.0);
+	fflush(fp);
+}
 
 void pin_initialization() {	
 	pinMode( MOTOR1_PIN[ 0 ], OUTPUT );
