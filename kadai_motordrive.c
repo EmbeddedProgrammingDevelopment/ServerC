@@ -43,6 +43,8 @@ int main( int argc, char *argv[] ) {
 
 	pin_initialization();	     
 	
+	//motor_ctrl('f');
+	
 	while( 1 ) {
 		char MOTOR_CMD = fgetc( input );
 		putchar( MOTOR_CMD );
@@ -57,6 +59,7 @@ int main( int argc, char *argv[] ) {
 			break;
 		}
 	}
+	
 	fclose( input );
 	
 	return 0;
@@ -64,9 +67,10 @@ int main( int argc, char *argv[] ) {
 
 
 void send_properties( FILE* fp ) {
-	uint8_t lststate = HIGH;
-	uint8_t counter = 0;
-	uint8_t i, j = 0;
+
+	unsigned char lststate = HIGH;
+	unsigned char counter = 0;
+	unsigned char i, j = 0;
 
 	for( i = 0; i < 5; i++ )
 		dht11_val[i] = 0;
@@ -76,7 +80,7 @@ void send_properties( FILE* fp ) {
 	delay( 18 );
 	digitalWrite( DHT11_PIN, HIGH );
 	delayMicroseconds( 40 );
-	pinMode( DHT11PIN, INPUT );
+	pinMode( DHT11_PIN, INPUT );
 	
 	for( i = 0; i < MAX_TIME; i++ )
 	{
@@ -85,7 +89,7 @@ void send_properties( FILE* fp ) {
 			counter++;
 			delayMicroseconds( 1 );
 			if( counter == 255 )
-				break;
+ 				break;
 		}
 		lststate = digitalRead( DHT11_PIN );
 		if( counter == 255 )
@@ -100,10 +104,14 @@ void send_properties( FILE* fp ) {
 	}
 	// verify cheksum and print the verified data
 	if( ( j >= 40 ) && ( dht11_val[4] == ( ( dht11_val[0] + dht11_val[1] + dht11_val[2] + dht11_val[3] ) & 0xFF ) ) ) {
-		float temperature = float( dht11_val[0] ) + float( dht11_val[1] ) * 0.01;
-		float humidity = float( dht11_val[2] ) + float( dht11_val[3] ) * 0.01;
-		fprintf( fp, "%f, %f", temperature, humidity ); //気温, 湿度の順で書き込むこと
+		float humidity = ( float )( dht11_val[0] ) + ( float )( dht11_val[1] ) * 0.01;
+		float temperature = ( float )( dht11_val[2] ) + ( float )( dht11_val[3] ) * 0.01;
+		fprintf( fp, "%f,%f|", temperature, humidity ); //気温, 湿度の順で書き込むこと
 	}
+	else{
+		fprintf( fp, "NODATA,NODATA|");
+	}
+
   	
 	fflush( fp );
 }
@@ -125,6 +133,7 @@ void motor_ctrl( char motor_cmd ) {
 	}
 	//motor control
 	if( motor_cmd == 'f' ) {
+		//puts("front roll.");
 		digitalWrite( MOTOR1_PIN[ 0 ], 1 );
 		digitalWrite( MOTOR1_PIN[ 1 ], 0 );
 		digitalWrite( MOTOR2_PIN[ 0 ], 1 );
