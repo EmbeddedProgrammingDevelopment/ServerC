@@ -106,7 +106,7 @@ void send_properties( FILE* fp ) {
 	if( ( j >= 40 ) && ( dht11_val[4] == ( ( dht11_val[0] + dht11_val[1] + dht11_val[2] + dht11_val[3] ) & 0xFF ) ) ) {
 		float humidity = ( float )( dht11_val[0] ) + ( float )( dht11_val[1] ) * 0.01;
 		float temperature = ( float )( dht11_val[2] ) + ( float )( dht11_val[3] ) * 0.01;
-		fprintf( fp, "%f,%f|", temperature, humidity ); //気温, 湿度の順で書き込むこと
+		fprintf( fp, "%.2f,%.2f|", temperature, humidity ); //気温, 湿度の順で書き込むこと
 	}
 	else{
 		fprintf( fp, "NODATA,NODATA|");
